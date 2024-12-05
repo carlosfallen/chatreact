@@ -38,6 +38,15 @@ const ChatScreen: React.FC = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const formatTimestamp = (timestamp: any) => {
+    const date = timestamp?.toDate();
+    if (!date) return '';
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
   const fetchUsers = async () => {
     try {
       const usersRef = collection(db, 'users');
@@ -81,6 +90,7 @@ const ChatScreen: React.FC = () => {
     
     return () => unsubscribe();
   }, []);
+
   useLayoutEffect(() => {
     scrollToBottom(); // Rolagem após a renderização
   }, [messages]); // Atualiza ao mudar a lista de mensagens
@@ -107,19 +117,28 @@ const ChatScreen: React.FC = () => {
     scrollToBottom();
     setNewMessage('');
   };
-  scrollToBottom();
+
   return (
     <div className="flex flex-col h-screen bg-[#F0F2F5] max-w-md mx-auto shadow-lg">
       <div className="bg-[#2B5278] text-white p-4 text-center font-semibold">Chat</div>
       
       <div className="flex-grow overflow-y-auto p-4 space-y-3">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.sender === currentUser?.uid ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[70%] px-4 py-2 rounded-2xl ${msg.sender === currentUser?.uid ? 'bg-[#4CA3FF] text-white' : 'bg-white text-black shadow-sm'}`}>
-              {msg.text}
-            </div>
-          </div>
-        ))}
+      {messages.map((msg) => (
+  <div key={msg.id} className={`flex flex-col ${msg.sender === currentUser?.uid ? 'items-end' : 'items-start'}`}>
+    <div 
+      className={`max-w-[70%] px-4 py-2 rounded-2xl ${
+        msg.sender === currentUser?.uid 
+          ? 'bg-[#4CA3FF] text-white' 
+          : 'bg-white text-black shadow-sm'
+      }`}
+    >
+      {msg.text}
+    </div>
+    <div className="text-xs text-gray-500 mt-1">
+      {formatTimestamp(msg.timestamp)}
+    </div>
+  </div>
+))}
         <div ref={messagesEndRef} />
       </div>
 
