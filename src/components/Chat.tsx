@@ -11,7 +11,7 @@ import {
   getDocs
 } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
-import { requestNotificationPermission, setupMessageListener } from '../services/notifications';
+import { requestNotificationPermission } from '../services/notifications';
 
 interface User {
   id: string;
@@ -68,7 +68,6 @@ const ChatScreen: React.FC = () => {
     const initNotifications = async () => {
       try {
         const token = await requestNotificationPermission();
-        setupMessageListener();
       } catch (error) {
         console.error('Erro na inicialização de notificações:', error);
       }

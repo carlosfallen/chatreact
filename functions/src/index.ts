@@ -15,8 +15,11 @@ export const sendNotificationOnNewMessage = functions.onDocumentCreated(
             return;
         }
 
-        const newMessage = snap.data() as { sender: string; text: string };
+        const newMessage = snap.data() as { sender: string; text: string; senderName?: string };
         const chatRoom = event.params.unique_chat_room;
+
+        // Buscar o nome do usuário caso não esteja na mensagem
+        const senderName = newMessage.senderName || await getSenderName(newMessage.sender);
 
         try {
             const recipientTokens = await getRecipientTokens(newMessage.sender);
@@ -29,12 +32,15 @@ export const sendNotificationOnNewMessage = functions.onDocumentCreated(
             const messaging = getMessaging();
             const payload = {
                 notification: {
-                    title: 'Nova Mensagem',
-                    body: `${newMessage.text}`,
+                    title: senderName || 'Usuário',
+                    body: newMessage.text,
                 },
                 data: {
-                    senderId: newMessage.sender,
-                    chatRoom: chatRoom,
+                    sender: newMessage.sender || '',
+                    chatRoom: chatRoom || '',
+                    senderName: senderName || 'Usuário',
+                    text: newMessage.text || '',
+                    timestamp: Date.now().toString()
                 },
             };
 
@@ -50,7 +56,17 @@ export const sendNotificationOnNewMessage = functions.onDocumentCreated(
     }
 );
 
-// Função para buscar tokens de todos os usuários, exceto o remetente
+// Função para buscar o nome do usuário no Firestore
+async function getSenderName(senderId: string): Promise<string> {
+    try {
+        const userDoc = await admin.firestore().collection('users').doc(senderId).get();
+        return userDoc.data()?.displayName || 'Usuário';
+    } catch (error) {
+        console.error('Erro ao buscar nome do usuário:', error);
+        return 'Usuário';
+    }
+}
+
 async function getRecipientTokens(senderId: string): Promise<string[]> {
     const usersCollection = admin.firestore().collection('users');
     const querySnapshot = await usersCollection.get();

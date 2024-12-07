@@ -41,32 +41,6 @@ export const requestNotificationPermission = async () => {
   }
 };
 
-export const setupMessageListener = () => {
-  try {
-    const messaging = getMessaging();
-    console.log('DEBUG: Messaging inicializado:', messaging);
-
-    // Listener para mensagens em primeiro plano
-    onMessage(messaging, (payload) => {
-      console.log('DEBUG: Mensagem recebida em primeiro plano:', payload);
-    
-      if (Notification.permission === 'granted') {
-        console.log('Permissão para notificações não concedida.');
-        new Notification(payload.notification?.title || 'Nova Mensagem', {
-          body: payload.notification?.body || 'Você tem uma nova mensagem',
-          icon: payload.notification?.icon || '/path/to/icon.png'
-        });
-      } else {
-        console.log('Permissão para notificações não concedida.');
-      }
-    });    
-
-    console.log('DEBUG: Listener de mensagens configurado com sucesso');
-  } catch (error) {
-    console.error('ERRO CRÍTICO ao configurar listener de mensagens:', error);
-  }
-};
-
 export const saveNotificationToken = async (token: string) => {
   try {
     if (auth.currentUser) {
